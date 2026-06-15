@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>Урок 9: Спасатель | Оператор БПЛА — Qwen</title>
+<style>
+:root{
+  --accent:#ecc94b;
+  --accent-rgb:236,201,75;
+  --accent-dark:#b8941f;
+  --accent-glow:rgba(236,201,75,0.5);
+  --accent-soft:rgba(236,201,75,0.2);
+}
+body.diff-easy{ --accent:#48bb78; --accent-rgb:72,187,120; --accent-dark:#2f855a; --accent-glow:rgba(72,187,120,0.5); --accent-soft:rgba(72,187,120,0.2);}
+body.diff-medium{ --accent:#ecc94b; --accent-rgb:236,201,75; --accent-dark:#b8941f; --accent-glow:rgba(236,201,75,0.5); --accent-soft:rgba(236,201,75,0.2);}
+body.diff-hard{ --accent:#e53e3e; --accent-rgb:229,62,62; --accent-dark:#9b2c2c; --accent-glow:rgba(229,62,62,0.5); --accent-soft:rgba(229,62,62,0.2);}
+
+*{ box-sizing: border-box; margin: 0; padding: 0;}
+body{ overflow: hidden; font-family:'Segoe UI','Orbitron', monospace; background:#0a0f1a; color:#ccffcc; touch-action: none; transition: background 0.5s;}
+
+.logo-header{ position: fixed; top: 20px; left: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); border-radius: 50px; border: 2px solid transparent; background-clip: padding-box; box-shadow: 0 8px 32px var(--accent-glow), 0 0 40px var(--accent-soft);}
+.logo-header::before{ content:''; position: absolute; inset:-2px; background: linear-gradient(135deg,var(--accent),var(--accent-dark),var(--accent),var(--accent-dark)); border-radius: 50px; z-index:-1; animation: gradientShift 5s ease infinite; background-size: 300% 300%;}
+@keyframes gradientShift{ 0%, 100%{ background-position: 0% 50%;} 50%{ background-position: 100% 50%;}}
+.logo-header img{ width: 40px; height: 40px; border-radius: 10px; animation: logoPulse 2s ease-in-out infinite;}
+@keyframes logoPulse{ 0%, 100%{ transform: scale(1); filter: drop-shadow(0 0 8px var(--accent));} 50%{ transform: scale(1.05); filter: drop-shadow(0 0 15px var(--accent)) drop-shadow(0 0 25px var(--accent));}}
+.logo-text{ display: flex; flex-direction: column; gap: 2px;}
+.logo-main{ font-size: 13px; font-weight: 900; background: linear-gradient(135deg,#ffffff,var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; white-space: nowrap;}
+.logo-sub{ font-size: 11px; color: var(--accent); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--accent-glow);}
+
+#intro-page{ position: fixed; inset: 0; background: radial-gradient(ellipse at center,#1a2520 0%,#0f1410 50%,#050805 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; transition: opacity 0.8s ease, transform 0.8s ease; overflow-y: auto; padding: 80px 20px 20px;}
+#intro-page.hidden{ opacity: 0; pointer-events: none; transform: scale(1.1);}
+.intro-image{ width: 90%; max-width: 900px; border-radius: 20px; box-shadow: 0 0 60px var(--accent-glow), 0 0 100px var(--accent-soft); border: 3px solid var(--accent-glow); animation: imageGlow 3s ease-in-out infinite;}
+@keyframes imageGlow{ 0%, 100%{ box-shadow: 0 0 40px var(--accent-soft), 0 0 80px var(--accent-soft);} 50%{ box-shadow: 0 0 60px var(--accent-glow), 0 0 120px var(--accent-glow);}}
+.intro-title{ margin-top: 30px; font-size: 42px; font-weight: 900; background: linear-gradient(135deg,#ffffff,var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-align: center; letter-spacing: 3px; animation: titlePulse 2s ease-in-out infinite;}
+@keyframes titlePulse{ 0%, 100%{ opacity: 1; transform: scale(1);} 50%{ opacity: 0.9; transform: scale(1.02);}}
+.intro-subtitle{ margin-top: 10px; font-size: 20px; color: var(--accent); text-align: center; letter-spacing: 5px; text-shadow: 0 0 20px var(--accent-glow);}
+.intro-desc{ margin-top: 20px; max-width: 600px; text-align: center; color:#b8d4b8; font-size: 14px; line-height: 1.6; padding: 0 20px;}
+.difficulty-select{ margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;}
+.diff-btn{ padding: 10px 20px; border-radius: 30px; border: 2px solid var(--accent); background: rgba(0,0,0,0.5); color: var(--accent); font-weight: bold; cursor: pointer; font-family: monospace; transition: 0.2s; font-size: 13px;}
+.diff-btn.active{ background: linear-gradient(145deg,var(--accent),var(--accent-dark)); color: white; box-shadow: 0 0 20px var(--accent-glow);}
+.diff-btn:hover{ transform: translateY(-2px);}
+.diff-btn.easy{ border-color: #48bb78; color: #48bb78;}
+.diff-btn.easy.active{ background: linear-gradient(145deg,#48bb78,#2f855a); box-shadow: 0 0 20px rgba(72,187,120,0.6);}
+.diff-btn.medium{ border-color: #ecc94b; color: #ecc94b;}
+.diff-btn.medium.active{ background: linear-gradient(145deg,#ecc94b,#b8941f); box-shadow: 0 0 20px rgba(236,201,75,0.6);}
+.diff-btn.hard{ border-color: #e53e3e; color: #e53e3e;}
+.diff-btn.hard.active{ background: linear-gradient(145deg,#e53e3e,#9b2c2c); box-shadow: 0 0 20px rgba(229,62,62,0.6);}
+.start-btn{ margin-top: 30px; padding: 18px 60px; font-size: 20px; font-weight: bold; background: linear-gradient(145deg,var(--accent),var(--accent-dark)); border: none; border-radius: 50px; color: white; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.5), 0 15px 30px var(--accent-glow); transition: all 0.2s; text-transform: uppercase; letter-spacing: 2px;}
+.start-btn:hover{ transform: translateY(-3px); box-shadow: 0 11px 0 rgba(0,0,0,0.5), 0 20px 40px var(--accent-glow);}
+.start-btn:active{ transform: translateY(5px); box-shadow: 0 3px 0 rgba(0,0,0,0.5), 0 8px 15px var(--accent-glow);}
+.best-time{ margin-top: 15px; font-size: 14px; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);}
+
+#simulator-page{ position: fixed; inset: 0; opacity: 0; pointer-events: none; transition: opacity 1s ease; background: radial-gradient(ellipse at top,#1a2520 0%,#0f1410 50%, #050805 100%);}
+#simulator-page.active{ opacity: 1; pointer-events: all;}
+#simulator-page::before{ content:''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(2px 2px at 20% 30%, white, transparent), radial-gradient(1px 1px at 60% 70%, white, transparent), radial-gradient(1px 1px at 50% 50%,#ccffcc, transparent), radial-gradient(2px 2px at 80% 10%, white, transparent); background-size: 200% 200%; opacity: 0.2; pointer-events: none; z-index: 2; animation: twinkle 8s linear infinite;}
+@keyframes twinkle{ 0%, 100%{ opacity: 0.15;} 50%{ opacity: 0.35;}}
+
+#stats-panel{ position: fixed; top: 90px; left: 20px; z-index: 100; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); border-radius: 20px; padding: 8px 15px; border-left: 4px solid var(--accent); pointer-events: none; font-family: monospace;}
+.stats{ font-size: 12px; display: flex; gap: 10px; flex-wrap: wrap;}
+.stat{ background:#1a2a1a; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--accent);}
+
+#crosshair{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; pointer-events: none; z-index: 120;}
+#crosshair-circle{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent);}
+#crosshair-progress{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 3px solid transparent; border-top-color: #00ff88; border-radius: 50%; opacity: 0; transition: opacity 0.2s;}
+#crosshair-progress.active{ opacity: 1; animation: progressSpin 2s linear infinite;}
+@keyframes progressSpin{ 0%{ transform: translate(-50%, -50%) rotate(0deg);} 100%{ transform: translate(-50%, -50%) rotate(360deg);}}
+#crosshair-dot{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background: #ff3333; border-radius: 50%; box-shadow: 0 0 8px #ff3333;}
+#crosshair.locked #crosshair-circle{ border-color: #00ff88; box-shadow: 0 0 20px #00ff88;}
+
+#compass{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; pointer-events: none; z-index: 115;}
+#compass-arrow{ position: absolute; top: 50%; left: 50%; width: 4px; height: 50px; background: linear-gradient(to top, transparent, #ff3333); transform-origin: bottom center; transform: translate(-50%, -100%); border-radius: 2px; box-shadow: 0 0 10px #ff3333; opacity: 0.7;}
+#compass-arrow::before{ content:'🆘'; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 16px;}
+
+#detector-indicator{ position: fixed; bottom: 180px; left: 50%; transform: translateX(-50%); z-index: 100; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--accent); font-family: monospace; font-size: 12px; color:#b8d4b8; pointer-events: none;}
+#detector-bar{ display: inline-block; width: 150px; height: 8px; background: #1a2a1a; border-radius: 4px; margin-left: 8px; vertical-align: middle; overflow: hidden;}
+#detector-fill{ height: 100%; background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000); width: 0%; transition: width 0.2s; border-radius: 4px;}
+
+#collision-flash{ position: fixed; inset: 0; background: radial-gradient(circle, rgba(255,100,0,0.6), transparent 70%); pointer-events: none; opacity: 0; z-index: 110; transition: opacity 0.1s;}
+#collision-flash.active{ opacity: 1;}
+
+#rescue-flash{ position: fixed; inset: 0; background: radial-gradient(circle, rgba(72,187,120,0.7), transparent 70%); pointer-events: none; opacity: 0; z-index: 115; transition: opacity 0.3s;}
+#rescue-flash.active{ opacity: 1;}
+
+#controls-hint{ position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 8px 14px; border-radius: 15px; font-size: 11px; pointer-events: none; font-family: monospace; color:#b8d4b8; z-index: 100; backdrop-filter: blur(5px); line-height: 1.6;}
+
+#target-panel{ position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 20px; text-align: center; border-right: 3px solid var(--accent); pointer-events: none; font-family: monospace; min-width: 170px; z-index: 100;}
+#target-counter{ font-size: 36px; font-weight: bold; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);}
+
+.lesson-badge{ position: fixed; bottom: 20px; right: 20px; background:#000000aa; padding: 5px 12px; border-radius: 20px; font-size: 11px; color: var(--accent); pointer-events: none; font-family: monospace; z-index: 100;}
+
+#pauseBtn{ position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; background: linear-gradient(145deg,var(--accent),var(--accent-dark)); border: none; padding: 8px 20px; border-radius: 30px; font-weight: bold; font-family: monospace; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5), 0 6px 15px var(--accent-glow); font-size: 13px; color: white;}
+
+#resetDroneBtn, #exitMenuBtn{ position: fixed; bottom: 130px; z-index: 9999; background: linear-gradient(145deg,var(--accent),var(--accent-dark)); border: none; padding: 10px 30px; border-radius: 40px; font-weight: bold; font-family: monospace; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5), 0 6px 15px var(--accent-glow); transition: 0.1s; font-size: 14px; color: white;}
+#resetDroneBtn{ left: calc(50% - 160px);}
+#exitMenuBtn{ left: calc(50% + 10px); background: linear-gradient(145deg,#cc3333,#882222); box-shadow: 0 4px 0 #551111, 0 6px 15px rgba(200,50,50,0.6);}
+#resetDroneBtn:hover, #exitMenuBtn:hover{ transform: translateY(-1px);}
+#resetDroneBtn:active, #exitMenuBtn:active{ transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.5);}
+
+#notification{ position: fixed; top: 200px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,var(--accent),var(--accent-dark)); color: white; padding: 12px 28px; border-radius: 30px; font-weight: bold; font-family: monospace; z-index: 9999; opacity: 0; transition: opacity 0.3s, top 0.3s; box-shadow: 0 8px 25px var(--accent-glow); white-space: nowrap; font-size: 14px; pointer-events: none;}
+#notification.show{ opacity: 1; top: 220px;}
+#notification.success{ background: linear-gradient(135deg,#55ff55,#22aa22); box-shadow: 0 8px 25px rgba(85, 255, 85, 0.5);}
+#notification.hit{ background: linear-gradient(135deg,#ff3300,#cc2200); box-shadow: 0 8px 25px rgba(255, 51, 0, 0.5);}
+#notification.info{ background: linear-gradient(135deg,#8888ff,#5555cc); box-shadow: 0 8px 25px rgba(136, 136, 255, 0.5);}
+
+.modal{ position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(15px); z-index: 10000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.5s ease;}
+.modal.show{ opacity: 1; visibility: visible;}
+.modal-content{ background: linear-gradient(135deg,#1a2a1a,#0f1410); border-radius: 30px; padding: 50px; text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 80px var(--accent-glow); animation: victoryGlow 1s ease-in-out infinite; max-width: 500px; margin: 20px;}
+.modal-content.defeat{ border-color: #ff3333; box-shadow: 0 0 80px rgba(255, 51, 0, 0.5); animation: defeatGlow 1s ease-in-out infinite;}
+@keyframes victoryGlow{ 0%, 100%{ box-shadow: 0 0 40px var(--accent-soft);} 50%{ box-shadow: 0 0 80px var(--accent-glow);}}
+@keyframes defeatGlow{ 0%, 100%{ box-shadow: 0 0 40px rgba(255, 51, 0, 0.3);} 50%{ box-shadow: 0 0 80px rgba(255, 51, 0, 0.8);}}
+.modal-content h2{ font-size: 48px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 3px;}
+.modal-content.defeat h2{ color:#ff3333;}
+.modal-content p{ font-size: 18px; color:#ccffcc; margin: 20px 0; line-height: 1.6;}
+.modal-stats{ background: rgba(0, 0, 0, 0.5); border-radius: 20px; padding: 20px; margin: 20px 0; font-size: 20px;}
+.modal-stats span{ color: var(--accent); font-size: 32px; font-weight: bold;}
+.modal-content.defeat .modal-stats span{ color:#ff6666;}
+.action-btn{ border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; font-weight: bold; color: white; cursor: pointer; margin: 10px; transition: 0.2s;}
+.restart-btn{ background: linear-gradient(145deg,var(--accent),var(--accent-dark)); box-shadow: 0 5px 0 rgba(0,0,0,0.5);}
+.exit-btn{ background: linear-gradient(145deg,#cc3333,#882222); box-shadow: 0 5px 0 #551111;}
+.action-btn:hover{ transform: translateY(-2px);}
+.action-btn:active{ transform: translateY(3px);}
+
+.support-container{ position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); z-index: 50; max-width: 600px; width: 90%; pointer-events: auto;}
+.support-block{ background: linear-gradient(135deg, rgba(30, 50, 40, 0.3), rgba(15, 25, 20, 0.5)); backdrop-filter: blur(15px); border-radius: 20px; padding: 10px 16px; border: 1px solid var(--accent-soft); text-align: center; font-size: 11px; color:#b8d4b8;}
+.support-block strong{ color:#ffdd99;}
+.support-block a{ color: var(--accent); text-decoration: none; font-weight: bold;}
+.phone-row{ display: inline-flex; align-items: center; gap: 8px; margin: 4px 0;}
+.phone-number{ font-family:'Courier New', monospace; color: white; font-weight: bold; background: rgba(0,0,0,0.4); padding: 3px 10px; border-radius: 15px; border: 1px solid var(--accent-soft);}
+.copy-btn{ background: linear-gradient(145deg,var(--accent),var(--accent-dark)); color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; border: none; cursor: pointer;}
+.copy-btn.copied{ background: linear-gradient(145deg,#55ff55,#22aa22)!important;}
+
+#webgl-error{ display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); color:#ff5555; z-index: 99999; padding: 40px; font-family: monospace; font-size: 18px; text-align: center; align-items: center; justify-content: center; flex-direction: column;}
+#webgl-error.show{ display: flex;}
+#webgl-error h2{ font-size: 28px; margin-bottom: 20px; color:#ff8888;}
+#webgl-error p{ max-width: 600px; line-height: 1.6; color:#ffcccc;}
+#webgl-error .hint{ margin-top: 20px; font-size: 14px; color: var(--accent);}
+
+#mobile-controls{ display: none; position: fixed; inset: 0; z-index: 200; pointer-events: none;}
+#joystick-zone{ position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; pointer-events: auto;}
+#joystick-base{ position: absolute; inset: 0; background: rgba(0,0,0,0.4); border: 2px solid var(--accent-glow); border-radius: 50%; backdrop-filter: blur(5px);}
+#joystick-stick{ position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; background: radial-gradient(circle, var(--accent), var(--accent-dark)); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 20px var(--accent-glow); pointer-events: none;}
+.mobile-btn{ position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); background: rgba(0,0,0,0.6); color: var(--accent); font-size: 24px; font-weight: bold; pointer-events: auto; backdrop-filter: blur(5px); box-shadow: 0 4px 15px var(--accent-glow);}
+#btn-up{ bottom: 180px; right: 30px;}
+#btn-down{ bottom: 30px; right: 30px;}
+#btn-rescue{ bottom: 105px; right: 30px; width: 90px; height: 90px; font-size: 32px; background: rgba(255,50,50,0.3); border-color: #ff3333;}
+#btn-rescue.active{ background: rgba(0,255,100,0.4); border-color: #00ff88; box-shadow: 0 0 25px rgba(0,255,100,0.6);}
+#btn-pause-mobile{ position: absolute; top: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid var(--accent); color: var(--accent); font-size: 20px; pointer-events: auto;}
+
+#mobile-controls-hint{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 10px 16px; border-radius: 15px; font-size: 11px; pointer-events: none; font-family: monospace; color:#b8d4b8; z-index: 199; backdrop-filter: blur(5px); line-height: 1.6; text-align: center; max-width: 300px;}
+
+@media (hover: none) and (pointer: coarse){
+  #mobile-controls{ display: block;}
+  #mobile-controls-hint{ display: block;}
+  #controls-hint{ display: none;}
+  #resetDroneBtn, #exitMenuBtn{ bottom: 200px;}
+}
+
+@media(max-width: 700px){
+  .logo-header{ padding: 8px 12px; gap: 8px;}
+  .logo-header img{ width: 32px; height: 32px;}
+  .logo-main{ font-size: 11px;}
+  .logo-sub{ font-size: 9px;}
+  .intro-title{ font-size: 28px;}
+  .intro-subtitle{ font-size: 14px;}
+  .start-btn{ padding: 14px 40px; font-size: 16px;}
+  .modal-content{ padding: 30px;}
+  .modal-content h2{ font-size: 32px;}
+  #resetDroneBtn, #exitMenuBtn{ bottom: 100px; padding: 8px 20px; font-size: 12px;}
+  #resetDroneBtn{ left: calc(50% - 120px);}
+  #exitMenuBtn{ left: calc(50% + 10px);}
+  #mobile-controls-hint{ font-size: 10px; padding: 6px 10px; max-width: 240px;}
+}
+</style>
+</head>
+<body class="diff-medium">
+
+<div class="logo-header" role="banner" aria-label="Логотип игры Оператор БПЛА Спасатель">
+  <img id="logoImg" src="favicon.ico" alt="СПАСАТЕЛЬ" aria-hidden="true">
+  <div class="logo-text">
+    <div class="logo-main">Qwen | Урок 9: Спасатель</div>
+    <div class="logo-sub">ОПЕРАТОР БПЛА 🚁</div>
+  </div>
+</div>
+
+<div id="intro-page" role="main" aria-label="Главное меню">
+  <img src="uav-rescue.jpg" alt="Оператор БПЛА СПАСАТЕЛЬ" class="intro-image" onerror="this.style.display='none'">
+  <h1 class="intro-title">ОПЕРАТОР СПАСАТЕЛЬ</h1>
+  <div class="intro-subtitle">Qwen · БПЛА ТРЕНАЖЁР · УРОК 9</div>
+  <div class="intro-desc">
+    Поисково-спасательная операция с помощью дрона-спасателя. 
+    Найдите пострадавших с помощью тепловизора и сбросьте им спасательный груз. 
+    Следите за индикатором тепла — чем ближе к пострадавшему, тем сильнее сигнал. 
+    Удерживайте прицел для сброса груза. Красная стрелка укажет направление к ближайшему.
+  </div>
+  <div class="difficulty-select" role="radiogroup" aria-label="Выбор сложности">
+    <button class="diff-btn easy" data-diff="easy" role="radio" aria-checked="false">🟢 Лёгкий<br><small>3 чел · 7 мин</small></button>
+    <button class="diff-btn medium active" data-diff="medium" role="radio" aria-checked="true">🟡 Средний<br><small>5 чел · 5 мин</small></button>
+    <button class="diff-btn hard" data-diff="hard" role="radio" aria-checked="false">🔴 Сложный<br><small>8 чел · 4 мин</small></button>
+  </div>
+  <div class="best-time" id="bestTimeDisplay" aria-live="polite"></div>
+  <button class="start-btn" id="startBtn" aria-label="Начать спасательную операцию">НАЧАТЬ СПАСАТЕЛЬНУЮ ОПЕРАЦИЮ</button>
+</div>
+
+<div id="simulator-page" role="region" aria-label="Игровое поле">
+  <div id="webgl-error" role="alert">
+    <h2>⚠️ WebGL не поддерживается</h2>
+    <p>Ваш браузер не поддерживает WebGL, необходимый для работы 3D-тренажёра.</p>
+    <p class="hint">Попробуйте:<br>• Обновить браузер<br>• Включить аппаратное ускорение<br>• Chrome, Firefox или Edge</p>
+  </div>
+
+  <div id="stats-panel" aria-label="Панель статистики">
+    <div class="stats">
+      <div class="stat">🆘 Спасено: <span id="hits">0</span></div>
+      <div class="stat">⏱️ Время: <span id="mission-timer">300</span>с</div>
+      <div class="stat">📡 Урок 9: Спасатель</div>
+    </div>
+  </div>
+
+  <div id="crosshair" aria-hidden="true">
+    <div id="crosshair-circle"></div>
+    <div id="crosshair-progress"></div>
+    <div id="crosshair-dot"></div>
+  </div>
+
+  <div id="compass" aria-hidden="true">
+    <div id="compass-arrow"></div>
+  </div>
+
+  <div id="collision-flash" aria-hidden="true"></div>
+  <div id="rescue-flash" aria-hidden="true"></div>
+  <div id="notification" role="status" aria-live="polite"></div>
+
+  <div id="target-panel" aria-label="Панель цели">
+    🆘 СПАСЕНО ЛЮДЕЙ<br>
+    <span id="target-counter">0</span> / <span id="target-total">5</span><br>
+    <span style="font-size:11px;">📦 Удерживайте прицел 2с</span>
+  </div>
+
+  <div id="detector-indicator" aria-label="Индикатор тепловизора">
+    🌡️ Сигнал тепловизора:
+    <div id="detector-bar"><div id="detector-fill"></div></div>
+  </div>
+
+  <div id="controls-hint" aria-label="Подсказки управления">
+    🎮 WASD / Стрелки — Горизонтальное движение<br>
+    ⬆️ Q / Shift — Набор высоты<br>
+    ⬇️ E / Ctrl — Снижение<br>
+    🖱️ ЛКМ (удерживать) — Сброс спас. груза<br>
+    ⏸️ ESC — Пауза<br>
+    🌡️ Следите за сигналом тепловизора!<br>
+    🧭 Красная стрелка → ближайший пострадавший
+  </div>
+
+  <div id="mobile-controls-hint" aria-label="Мобильное управление">
+    🕹️ Джойстик — движение<br>
+    ⬆️⬇️ Кнопки — высота<br>
+    📦 Удержание — сброс груза
+  </div>
+
+  <div class="lesson-badge">📡 ЗАДАНИЕ: Спасти людей за отведённое время</div>
+
+  <button id="pauseBtn" aria-label="Пауза">⏸️ ПАУЗА</button>
+  <button id="resetDroneBtn" aria-label="Перезапустить дрон">🔄 Перезапустить</button>
+  <button id="exitMenuBtn" aria-label="Выйти в меню">🚪 Выйти в меню</button>
+
+  <div id="mobile-controls" aria-label="Мобильное управление">
+    <div id="joystick-zone" role="application" aria-label="Джойстик управления">
+      <div id="joystick-base"></div>
+      <div id="joystick-stick"></div>
+    </div>
+    <button class="mobile-btn" id="btn-up" aria-label="Поднять дрон">⬆</button>
+    <button class="mobile-btn" id="btn-down" aria-label="Опустить дрон">⬇</button>
+    <button class="mobile-btn" id="btn-rescue" aria-label="Сбросить спасательный груз">📦</button>
+    <button class="mobile-btn" id="btn-pause-mobile" aria-label="Пауза">⏸</button>
+  </div>
+
+  <div class="support-container">
+    <div class="support-block">
+      <strong>🤝 ПОДДЕРЖАТЬ ПРОЕКТ</strong><br>
+      💙<br>
+      Приложение бесплатное. Было и останется.<br><br>
+      Если проект помог вам или вашим близким — можете поддержать разработку добровольным переводом.<br><br>
+      📱 <strong>ПЕРЕВОД ПО НОМЕРУ ТЕЛЕФОНА:</strong><br>
+      <div class="phone-row">
+        <span class="phone-number" id="phoneNumber">8-920-227-56-76</span>
+        <button class="copy-btn" id="copyPhoneBtn" aria-label="Копировать номер телефона">📋 Копировать номер</button>
+      </div>
+      ✅ Деньги придут мгновенно. Без комиссии. Безопасно.<br><br>
+      ❤️ Спасибо за поддержку! ❤️<br><br>
+      🌟 👉 <a href="https://ancf-hue.github.io/" target="_blank" rel="noopener">Каталог бесплатных офлайн-приложений Anti-AI Shield.</a>
+    </div>
+  </div>
+</div>
+
+<div id="victoryModal" class="modal" role="dialog" aria-labelledby="victoryTitle" aria-modal="true">
+  <div class="modal-content">
+    <h2 id="victoryTitle">🏆 ОПЕРАЦИЯ ЗАВЕРШЕНА! 🏆</h2>
+    <p>Отличная работа, оператор-спасатель!<br>Все пострадавшие спасены!</p>
+    <div class="modal-stats">
+      Спасено: <span id="victoryHits">5</span>/<span id="victoryTotal">5</span> 🆘<br>
+      Время: <span id="victoryTime">0</span>с ⏱️<br>
+      <span id="newRecordBadge" style="display:none; color: var(--accent); font-size:18px;">🏆 НОВЫЙ РЕКОРД!</span>
+    </div>
+    <p>Настоящий герой-спасатель! 🚁</p>
+    <button class="action-btn restart-btn" id="fullRestartBtn" aria-label="Начать заново">🔄 НАЧАТЬ ЗАНОВО</button>
+    <button class="action-btn exit-btn" id="exitToMenuBtn" aria-label="Выйти в меню">🚪 В МЕНЮ</button>
+  </div>
+</div>
+
+<div id="defeatModal" class="modal" role="dialog" aria-labelledby="defeatTitle" aria-modal="true">
+  <div class="modal-content defeat">
+    <h2 id="defeatTitle">💥 ОПЕРАЦИЯ ПРОВАЛЕНА 💥</h2>
+    <p id="defeatReason">Дрон разбился!</p>
+    <div class="modal-stats">
+      Спасено: <span id="defeatHits">0</span>/<span id="defeatTotal">5</span> 🆘<br>
+      Потрачено времени: <span id="defeatTime">0</span>с ⏱️
+    </div>
+    <p>Попробуйте снова, оператор! 💪</p>
+    <button class="action-btn restart-btn" id="defeatRestartBtn" aria-label="Попробовать снова">🔄 ПОПРОБОВАТЬ СНОВА</button>
+    <button class="action-btn exit-btn" id="defeatExitBtn" aria-label="Выйти в меню">🚪 В МЕНЮ</button>
+  </div>
+</div>
+
+<div id="pauseModal" class="modal" role="dialog" aria-labelledby="pauseTitle" aria-modal="true">
+  <div class="modal-content">
+    <h2 id="pauseTitle">⏸️ ПАУЗА</h2>
+    <p>Операция приостановлена</p>
+    <button class="action-btn restart-btn" id="resumeBtn" aria-label="Продолжить">▶️ ПРОДОЛЖИТЬ</button>
+    <button class="action-btn restart-btn" id="pauseRestartBtn" aria-label="Перезапуск">🔄 ПЕРЕЗАПУСК</button>
+    <button class="action-btn exit-btn" id="pauseExitBtn" aria-label="Выйти в меню">🚪 В МЕНЮ</button>
+  </div>
+</div>
+
+<audio id="bg-music" loop preload="none">
+  <source src="rescue-theme.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+const DIFFICULTIES = {
+  easy:   { targets: 3, time: 420, detectorRange: 15, captureRadius: 4, label: 'Лёгкий', fogDensity: 0.008, smokeCount: 0 },
+  medium: { targets: 5, time: 300, detectorRange: 10, captureRadius: 3, label: 'Средний', fogDensity: 0.012, smokeCount: 5 },
+  hard:   { targets: 8, time: 240, detectorRange: 7,  captureRadius: 2.5, label: 'Сложный', fogDensity: 0.018, smokeCount: 10 }
+};
+
+const CONFIG = {
+  DRONE_SPEED: 0.06,
+  DRONE_DRAG: 0.93,
+  MAX_TILT: 0.3,
+  MAX_ALTITUDE: 40,
+  MIN_ALTITUDE: 2,
+  START_ALTITUDE: 10,
+  CLIMB_SPEED: 0.2,
+  DIVE_SPEED: 0.25,
+  COLLISION_FORCE_THRESHOLD: 0.05,
+  CRASH_FORCE_THRESHOLD: 0.15,
+  LIMIT_X: 18,
+  LIMIT_Z: 18,
+  MIN_X: -18,
+  MIN_Z: -18,
+  GROUND_Y: 0,
+  CAMERA_OFFSET: { x: 0, y: 8, z: 10 },
+  CAMERA_LERP: 0.09,
+  LOW_END_CORES: 4,
+  MAX_PIXEL_RATIO: 2,
+  CAPTURE_TIME: 2000,
+  TRAIL_LENGTH: 15,
+  TIMER_ALERTS: { 60: "⏰ Осталась 1 минута!", 30: "⏰ Осталось 30 секунд!", 10: "⏰ 10 секунд!" }
+};
+
+let currentDifficulty = 'medium';
+
+const state = {
+  keys: {},
+  mouseDown: false,
+  pitch: 0,
+  roll: 0,
+  crashRotation: { x: 0, z: 0 },
+  velocity: { x: 0, y: 0, z: 0 },
+  altitude: CONFIG.START_ALTITUDE,
+  targetAltitude: CONFIG.START_ALTITUDE,
+  isCrashed: false,
+  rescuedCount: 0,
+  propAngle: 0,
+  trailIndex: 0,
+  trailTimer: 0,
+  animationId: null,
+  simulatorInitialized: false,
+  gameCompleted: false,
+  currentTarget: null,
+  captureStartTime: 0,
+  timeLeft: 300,
+  timerInterval: null,
+  missionStartTime: 0,
+  detectorSignal: 0,
+  isRestarting: false,
+  isPaused: false,
+  joystickInput: { x: 0, y: 0 }
+};
+
+let scene, camera, renderer, droneGroup;
+let propellers = [];
+let trailParticles = [];
+let victims = [];
+let smokeParticles = [];
+let gridHelper;
+let isLowEnd = false;
+let activeAnimations = [];
+let audioCtx = null;
+let audioHintShown = false;
+let lastDetectorBeep = 0;
+let detectorDisc;
+let rescueCable = null;
+let rescueBox = null;
+let cameraShake = 0;
+let spotlight;
+
+const rescueEffectPool = {
+  rings: [],
+  materials: [],
+  geometries: [],
+  
+  getRing(){
+    if(this.rings.length > 0) return this.rings.pop();
+    const geo = new THREE.RingGeometry(0.1, 0.2, 32);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x00ff88, transparent: true, opacity: 1, side: THREE.DoubleSide
+    });
+    this.geometries.push(geo);
+    this.materials.push(mat);
+    return new THREE.Mesh(geo, mat);
+  },
+  
+  returnRing(ring){
+    if(ring && ring.parent) ring.parent.remove(ring);
+    ring.material.opacity = 1;
+    ring.scale.set(1, 1, 1);
+    this.rings.push(ring);
+  },
+  
+  dispose(){
+    this.geometries.forEach(g => g.dispose());
+    this.materials.forEach(m => m.dispose());
+    this.geometries = [];
+    this.materials = [];
+    this.rings = [];
+  }
+};
+
+const _tmpVec = new THREE.Vector3();
+
+function checkWebGL(){
+  try{
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return !!gl;
+  } catch(e){ return false; }
+}
+
+(function setupFavicon(){
+  const img = document.getElementById('logoImg');
+  const fallbackSVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+    '<rect width="100" height="100" rx="20" fill="#ecc94b"/>' +
+    '<text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🚁</text></svg>'
+  );
+  let tried = false;
+  img.onerror = function(){
+    if(!tried){ tried = true; img.src = fallbackSVG; }
+    else { img.onerror = null; }
+  };
+})();
+
+function copyPhone(){
+  const phone = document.getElementById('phoneNumber').innerText;
+  const btn = document.getElementById('copyPhoneBtn');
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    navigator.clipboard.writeText(phone)
+      .then(() => showCopySuccess(btn))
+      .catch(() => fallbackCopy(phone, btn));
+  } else fallbackCopy(phone, btn);
+}
+function fallbackCopy(text, btn){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); showCopySuccess(btn); }
+  catch(e){ alert('Номер: ' + text); }
+  document.body.removeChild(ta);
+}
+function showCopySuccess(btn){
+  btn.classList.add('copied'); btn.innerText = '✅ Скопировано!';
+  setTimeout(() => { btn.classList.remove('copied'); btn.innerText = '📋 Копировать номер'; }, 2000);
+}
+document.getElementById('copyPhoneBtn').addEventListener('click', copyPhone);
+
+function getBestTime(diff){
+  try { return parseInt(localStorage.getItem('rescue_best_' + diff) || '0'); }
+  catch(e){ return 0; }
+}
+function setBestTime(diff, time){
+  try { localStorage.setItem('rescue_best_' + diff, time); } catch(e){}
+}
+function updateBestTimeDisplay(){
+  const best = getBestTime(currentDifficulty);
+  const el = document.getElementById('bestTimeDisplay');
+  if(best > 0){
+    el.innerHTML = `🏆 Лучшее время (${DIFFICULTIES[currentDifficulty].label}): <b>${best}с</b>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function applyDifficulty(diff){
+  currentDifficulty = diff;
+  document.body.className = 'diff-' + diff;
+  document.querySelectorAll('.diff-btn').forEach(b => {
+    const isActive = b.dataset.diff === diff;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-checked', isActive ? 'true' : 'false');
+  });
+  updateBestTimeDisplay();
+  if(scene && scene.fog){
+    scene.fog.density = DIFFICULTIES[diff].fogDensity;
+  }
+}
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyDifficulty(btn.dataset.diff));
+});
+applyDifficulty('medium');
+
+async function startAudio(){
+  if(audioCtx && audioCtx.state === 'suspended'){
+    try{ await audioCtx.resume(); } catch(e){}
+  }
+  const music = document.getElementById('bg-music');
+  if(music.paused){
+    music.volume = 0.4;
+    music.play().catch(e => console.log('🎵 Воспроизведение заблокировано:', e.message));
+  }
+}
+
+function ensureAudio(){
+  if(!audioCtx){
+    try{ 
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    catch(e){ return false; }
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+  return true;
+}
+
+function playSound(freq, duration, type = 'square', volume = 0.08){
+  if(!ensureAudio()) return;
+  try{
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + duration);
+    setTimeout(() => {
+      try { osc.disconnect(); } catch(e){}
+      try { gain.disconnect(); } catch(e){}
+    }, (duration * 1000) + 50);
+  } catch(e){}
+}
+
+const SFX = {
+  rescue: () => {
+    playSound(600, 0.1, 'sine', 0.15);
+    setTimeout(() => playSound(900, 0.15, 'sine', 0.1), 50);
+    setTimeout(() => playSound(1200, 0.2, 'sine', 0.08), 100);
+  },
+  beep: () => playSound(800, 0.05, 'sine', 0.05),
+  lock: () => {
+    playSound(1000, 0.1, 'sine', 0.1);
+    setTimeout(() => playSound(1500, 0.15, 'sine', 0.08), 80);
+  },
+  collision: () => { playSound(150, 0.15, 'square', 0.15); playSound(80, 0.2, 'sawtooth', 0.1); },
+  crash: () => {
+    playSound(80, 0.5, 'sawtooth', 0.25);
+    playSound(50, 0.6, 'square', 0.2);
+    setTimeout(() => playSound(40, 0.4, 'triangle', 0.15), 200);
+  },
+  victory: () => {
+    playSound(523, 0.15, 'sine', 0.12);
+    setTimeout(() => playSound(659, 0.15, 'sine', 0.12), 150);
+    setTimeout(() => playSound(784, 0.15, 'sine', 0.12), 300);
+    setTimeout(() => playSound(1047, 0.3, 'sine', 0.15), 450);
+  },
+  detector: (intensity) => {
+    const freq = 400 + intensity * 600;
+    playSound(freq, 0.05, 'square', 0.03 * intensity);
+  },
+  pause: () => playSound(400, 0.1, 'sine', 0.1),
+  drop: () => {
+    playSound(300, 0.15, 'triangle', 0.1);
+    setTimeout(() => playSound(200, 0.2, 'sine', 0.08), 100);
+  }
+};
+
+let notifTimeout = null;
+function showNotification(text, type = ''){
+  const n = document.getElementById('notification');
+  if(!n) return;
+  n.innerText = text;
+  n.className = 'show ' + type;
+  if(notifTimeout) clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(() => { n.className = ''; }, 2500);
+}
+
+function showVictoryModal(){
+  if(state.gameCompleted) return;
+  state.gameCompleted = true;
+  if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval = null; }
+  state.velocity = { x: 0, y: 0, z: 0 };
+  
+  const diff = DIFFICULTIES[currentDifficulty];
+  const timeUsed = diff.time - state.timeLeft;
+  document.getElementById('victoryHits').innerText = state.rescuedCount;
+  document.getElementById('victoryTotal').innerText = diff.targets;
+  document.getElementById('victoryTime').innerText = timeUsed;
+  
+  const best = getBestTime(currentDifficulty);
+  const badge = document.getElementById('newRecordBadge');
+  if(best === 0 || timeUsed < best){
+    setBestTime(currentDifficulty, timeUsed);
+    badge.style.display = 'inline';
+    showNotification('🏆 НОВЫЙ РЕКОРД!', 'success');
+  } else {
+    badge.style.display = 'none';
+  }
+  
+  document.getElementById('victoryModal').classList.add('show');
+  SFX.victory();
+}
+
+function showDefeatModal(reason){
+  if(state.gameCompleted) return;
+  state.gameCompleted = true;
+  if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval = null; }
+  state.velocity = { x: 0, y: 0, z: 0 };
+  
+  const diff = DIFFICULTIES[currentDifficulty];
+  const timeUsed = diff.time - state.timeLeft;
+  document.getElementById('defeatReason').innerText = reason;
+  document.getElementById('defeatHits').innerText = state.rescuedCount;
+  document.getElementById('defeatTotal').innerText = diff.targets;
+  document.getElementById('defeatTime').innerText = timeUsed;
+  document.getElementById('defeatModal').classList.add('show');
+  SFX.crash();
+}
+
+function togglePause(){
+  if(state.gameCompleted) return;
+  
+  state.isPaused = !state.isPaused;
+  if(state.isPaused){
+    document.getElementById('pauseModal').classList.add('show');
+    if(state.timerInterval){ 
+      clearInterval(state.timerInterval); 
+      state.timerInterval = null; 
+    }
+    SFX.pause();
+  } else {
+    document.getElementById('pauseModal').classList.remove('show');
+    if(!state.isCrashed) startMissionTimer(true);
+    if(!state.animationId) animate(performance.now());
+  }
+}
+
+function startGame(){
+  const diff = DIFFICULTIES[currentDifficulty];
+  CONFIG.TARGET_COUNT = diff.targets;
+  CONFIG.MISSION_TIME = diff.time;
+  CONFIG.DETECTOR_RANGE = diff.detectorRange;
+  CONFIG.CAPTURE_RADIUS = diff.captureRadius;
+  
+  document.getElementById('target-total').innerText = diff.targets;
+  startSimulator();
+}
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+
+async function startSimulator(){
+  await startAudio();
+  document.getElementById('intro-page').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('simulator-page').classList.add('active');
+    if(!state.simulatorInitialized) initSimulator();
+    else fullGameRestart();
+    startMissionTimer();
+  }, 800);
+}
+
+function exitToMenu(){
+  if(state.animationId){
+    cancelAnimationFrame(state.animationId);
+    state.animationId = null;
+  }
+  if(state.timerInterval){
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+  document.getElementById('victoryModal').classList.remove('show');
+  document.getElementById('defeatModal').classList.remove('show');
+  document.getElementById('pauseModal').classList.remove('show');
+  document.getElementById('simulator-page').classList.remove('active');
+  setTimeout(() => {
+    document.getElementById('intro-page').classList.remove('hidden');
+    updateBestTimeDisplay();
+  }, 300);
+  const music = document.getElementById('bg-music');
+  music.pause();
+  music.currentTime = 0;
+  state.isPaused = false;
+}
+
+function clearActiveAnimations(){
+  activeAnimations.forEach(anim => { if(anim.cancel) anim.cancel(); });
+  activeAnimations = [];
+}
+
+function fullGameRestart(){
+  if(state.isRestarting) return;
+  state.isRestarting = true;
+  
+  document.getElementById('victoryModal').classList.remove('show');
+  document.getElementById('defeatModal').classList.remove('show');
+  document.getElementById('pauseModal').classList.remove('show');
+  state.gameCompleted = false;
+  state.rescuedCount = 0;
+  state.isCrashed = false;
+  state.crashRotation = { x: 0, z: 0 };
+  state.velocity = { x: 0, y: 0, z: 0 };
+  state.altitude = CONFIG.START_ALTITUDE;
+  state.targetAltitude = CONFIG.START_ALTITUDE;
+  state.pitch = 0;
+  state.roll = 0;
+  state.currentTarget = null;
+  state.captureStartTime = 0;
+  state.detectorSignal = 0;
+  state.isPaused = false;
+
+  document.getElementById('hits').innerText = '0';
+  document.getElementById('target-counter').innerText = '0';
+  document.getElementById('detector-fill').style.width = '0%';
+  document.getElementById('crosshair-progress').classList.remove('active');
+  document.getElementById('crosshair').classList.remove('locked');
+
+  if(droneGroup){
+    droneGroup.position.set(0, state.altitude, 0);
+    droneGroup.rotation.set(0, 0, 0);
+  }
+
+  regenerateVictims();
+
+  trailParticles.forEach(p => {
+    p.visible = false;
+    p.scale.set(1, 1, 1);
+    if(p.userData) p.userData.life = 0;
+  });
+
+  clearActiveAnimations();
+  startMissionTimer();
+  showNotification("🔄 Операция перезапущена! Удачи, СПАСАТЕЛЬ! 🚁", 'success');
+  
+  setTimeout(() => { state.isRestarting = false; }, 500);
+}
+
+function resetExercise(){
+  fullGameRestart();
+}
+
+function startMissionTimer(resume = false){
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  if(!resume){
+    state.timeLeft = CONFIG.MISSION_TIME;
+  }
+  state.missionStartTime = performance.now();
+  
+  const timerElem = document.getElementById('mission-timer');
+  if(timerElem) timerElem.innerText = state.timeLeft;
+  
+  state.timerInterval = setInterval(() => {
+    if(state.isCrashed || state.gameCompleted || state.isPaused) return;
+    state.timeLeft--;
+    if(timerElem) timerElem.innerText = state.timeLeft;
+    
+    if(CONFIG.TIMER_ALERTS[state.timeLeft]){
+      const type = state.timeLeft <= 30 ? 'hit' : 'info';
+      showNotification(CONFIG.TIMER_ALERTS[state.timeLeft], type);
+    }
+    
+    if(state.timeLeft <= 0 && !state.gameCompleted){
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      showDefeatModal("⏰ Время вышло! Пострадавшие не дождались помощи.");
+    }
+  }, 1000);
+}
+
+function initSimulator(){
+  console.log('🚁 Инициализация Урока 9: Спасатель...');
+  if(typeof THREE === 'undefined'){
+    document.getElementById('webgl-error').classList.add('show');
+    return;
+  }
+  if(!checkWebGL()){
+    document.getElementById('webgl-error').classList.add('show');
+    return;
+  }
+
+  setupScene();
+  setupLights();
+  setupFloor();
+  setupEnvironment();
+  setupDrone();
+  setupTrail();
+  setupVictims();
+  setupSmoke();
+  setupEventListeners();
+  state.simulatorInitialized = true;
+
+  setTimeout(() => {
+    if(!audioCtx || audioCtx.state === 'suspended'){
+      if(!audioHintShown){
+        showNotification("🎵 Нажмите на экран для звука", 'info');
+        audioHintShown = true;
+      }
+    }
+  }, 1500);
+
+  animate(performance.now());
+  console.log('✅ Урок 9 запущен. Оператор СПАСАТЕЛЬ — к операции!');
+}
+
+function setupScene(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a2520);
+  const diff = DIFFICULTIES[currentDifficulty];
+  scene.fog = new THREE.FogExp2(0x1a2520, diff.fogDensity);
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, state.altitude + 8, 10);
+
+  isLowEnd = (navigator.hardwareConcurrency || 4) < CONFIG.LOW_END_CORES;
+  const pixelRatio = isLowEnd ? 1 : Math.min(window.devicePixelRatio, CONFIG.MAX_PIXEL_RATIO);
+
+  try{
+    renderer = new THREE.WebGLRenderer({ antialias: !isLowEnd, alpha: true });
+  } catch(e){
+    document.getElementById('webgl-error').classList.add('show');
+    throw e;
+  }
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(pixelRatio);
+  renderer.shadowMap.enabled = !isLowEnd;
+  if(!isLowEnd) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+
+  const simPage = document.getElementById('simulator-page');
+  simPage.insertBefore(renderer.domElement, simPage.firstChild);
+  renderer.domElement.style.position = 'fixed';
+  renderer.domElement.style.top = '0';
+  renderer.domElement.style.left = '0';
+  renderer.domElement.style.zIndex = '1';
+}
+
+function setupLights(){
+  scene.add(new THREE.AmbientLight(0x4a5a4a, 0.5));
+
+  const sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  sunLight.position.set(10, 20, 10);
+  if(!isLowEnd){
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
+  }
+  scene.add(sunLight);
+
+  const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+  const accentHex = parseInt(accentColor.replace('#',''), 16) || 0xecc94b;
+  const accentLight = new THREE.PointLight(accentHex, 0.6, 25);
+  accentLight.position.set(-8, 5, -8);
+  scene.add(accentLight);
+  
+  const fillLight = new THREE.DirectionalLight(0x88aaff, 0.3);
+  fillLight.position.set(-10, 10, -10);
+  scene.add(fillLight);
+}
+
+function setupFloor(){
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x2a3a2a, roughness: 0.9, metalness: 0.1
+  });
+  const floorPlane = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), floorMat);
+  floorPlane.rotation.x = -Math.PI / 2;
+  floorPlane.position.y = CONFIG.GROUND_Y;
+  if(!isLowEnd) floorPlane.receiveShadow = true;
+  scene.add(floorPlane);
+
+  gridHelper = new THREE.GridHelper(40, 40, 0xecc94b, 0x3a4a3a);
+  gridHelper.position.y = CONFIG.GROUND_Y + 0.01;
+  gridHelper.material.transparent = true;
+  gridHelper.material.opacity = 0.3;
+  scene.add(gridHelper);
+  
+  const borderMat = new THREE.MeshBasicMaterial({ color: 0xff3333, transparent: true, opacity: 0.3 });
+  const borderGeo = new THREE.BoxGeometry(0.1, 2, 40);
+  const b1 = new THREE.Mesh(borderGeo, borderMat); b1.position.set(CONFIG.LIMIT_X, 1, 0); scene.add(b1);
+  const b2 = new THREE.Mesh(borderGeo, borderMat); b2.position.set(CONFIG.MIN_X, 1, 0); scene.add(b2);
+  const borderGeo2 = new THREE.BoxGeometry(40, 2, 0.1);
+  const b3 = new THREE.Mesh(borderGeo2, borderMat); b3.position.set(0, 1, CONFIG.LIMIT_Z); scene.add(b3);
+  const b4 = new THREE.Mesh(borderGeo2, borderMat); b4.position.set(0, 1, CONFIG.MIN_Z); scene.add(b4);
+}
+
+function setupEnvironment(){
+  const bushMat = new THREE.MeshStandardMaterial({
+    color: 0x1a3a1a, roughness: 0.9, metalness: 0.1
+  });
+  const rockMat = new THREE.MeshStandardMaterial({
+    color: 0x4a4a4a, roughness: 0.95, metalness: 0.1
+  });
+  const ruinMat = new THREE.MeshStandardMaterial({
+    color: 0x5a5a5a, roughness: 0.9, metalness: 0.2
+  });
+  
+  const bushCount = isLowEnd ? 8 : 15;
+  const rockCount = isLowEnd ? 4 : 8;
+  const ruinCount = isLowEnd ? 2 : 4;
+  const sphereSegments = isLowEnd ? 6 : 8;
+  
+  for(let i = 0; i < bushCount; i++){
+    const bush = new THREE.Mesh(
+      new THREE.SphereGeometry(0.8 + Math.random() * 0.5, sphereSegments, sphereSegments),
+      bushMat
+    );
+    bush.position.set(
+      (Math.random() - 0.5) * 35,
+      0.5,
+      (Math.random() - 0.5) * 35
+    );
+    bush.scale.y = 0.7;
+    scene.add(bush);
+  }
+  
+  for(let i = 0; i < rockCount; i++){
+    const rock = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.4, 0),
+      rockMat
+    );
+    rock.position.set(
+      (Math.random() - 0.5) * 35,
+      0.3,
+      (Math.random() - 0.5) * 35
+    );
+    rock.rotation.set(Math.random(), Math.random(), Math.random());
+    scene.add(rock);
+  }
+  
+  for(let i = 0; i < ruinCount; i++){
+    const ruin = new THREE.Group();
+    const wall1 = new THREE.Mesh(
+      new THREE.BoxGeometry(2 + Math.random(), 1.5 + Math.random(), 0.3),
+      ruinMat
+    );
+    wall1.position.y = 0.75;
+    wall1.rotation.y = Math.random() * Math.PI;
+    ruin.add(wall1);
+    
+    const wall2 = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 1, 0.3),
+      ruinMat
+    );
+    wall2.position.set(0.5, 0.5, 0.3);
+    wall2.rotation.set(0.2, 0.5, 0.1);
+    ruin.add(wall2);
+    
+    ruin.position.set(
+      (Math.random() - 0.5) * 30,
+      0,
+      (Math.random() - 0.5) * 30
+    );
+    scene.add(ruin);
+  }
+}
+
+function setupDrone(){
+  droneGroup = new THREE.Group();
+  scene.add(droneGroup);
+  droneGroup.position.set(0, state.altitude, 0);
+
+  propellers = [];
+
+  const bodyMat = new THREE.MeshStandardMaterial({ 
+    color: 0xf5f5f5, roughness: 0.3, metalness: 0.4 
+  });
+  const accentMat = new THREE.MeshStandardMaterial({ 
+    color: 0xe53e3e, roughness: 0.3, metalness: 0.5,
+    emissive: 0xff0000, emissiveIntensity: 0.2
+  });
+  const orangeMat = new THREE.MeshStandardMaterial({ 
+    color: 0xed8936, roughness: 0.3, metalness: 0.5 
+  });
+  const engineMat = new THREE.MeshStandardMaterial({ 
+    color: 0x1a1a1a, roughness: 0.2, metalness: 0.95 
+  });
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: 0x88ccff, roughness: 0.1, metalness: 0.3,
+    transparent: true, opacity: 0.6
+  });
+  const redMat = new THREE.MeshStandardMaterial({
+    color: 0xff2222, emissive: 0xff0000, emissiveIntensity: 0.8,
+    roughness: 0.3, metalness: 0.5
+  });
+  const greenMat = new THREE.MeshStandardMaterial({
+    color: 0x22ff22, emissive: 0x00ff00, emissiveIntensity: 0.8,
+    roughness: 0.3, metalness: 0.5
+  });
+  const crossMat = new THREE.MeshStandardMaterial({
+    color: 0xff0000, emissive: 0xff3333, emissiveIntensity: 0.5,
+    roughness: 0.4, metalness: 0.3
+  });
+
+  const bodySegments = isLowEnd ? 10 : 16;
+  const bodySegmentsV = isLowEnd ? 8 : 12;
+
+  const bodyTop = new THREE.Mesh(
+    new THREE.SphereGeometry(0.55, bodySegments, bodySegmentsV, 0, Math.PI * 2, 0, Math.PI / 2),
+    bodyMat
+  );
+  bodyTop.scale.set(1, 0.5, 1.3);
+  bodyTop.position.y = 0.05;
+  bodyTop.castShadow = !isLowEnd;
+  droneGroup.add(bodyTop);
+
+  const bodyBottom = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.4, 0.25, bodySegments),
+    bodyMat
+  );
+  bodyBottom.position.y = -0.05;
+  bodyBottom.castShadow = !isLowEnd;
+  droneGroup.add(bodyBottom);
+
+  const accentRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.56, 0.04, 6, isLowEnd ? 16 : 24),
+    accentMat
+  );
+  accentRing.rotation.x = Math.PI / 2;
+  accentRing.position.y = 0.05;
+  droneGroup.add(accentRing);
+
+  const crossH = new THREE.Mesh(
+    new THREE.BoxGeometry(0.4, 0.02, 0.12),
+    crossMat
+  );
+  crossH.position.y = 0.32;
+  droneGroup.add(crossH);
+  
+  const crossV = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12, 0.02, 0.4),
+    crossMat
+  );
+  crossV.position.y = 0.32;
+  droneGroup.add(crossV);
+
+  const cameraDome = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, bodySegments, bodySegmentsV),
+    glassMat
+  );
+  cameraDome.position.set(0, -0.22, 0.15);
+  cameraDome.scale.y = 0.7;
+  droneGroup.add(cameraDome);
+  
+  const cameraLens = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.1, 0.06, 10),
+    engineMat
+  );
+  cameraLens.position.set(0, -0.32, 0.15);
+  droneGroup.add(cameraLens);
+  
+  const thermalDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03, 6, 6),
+    redMat
+  );
+  thermalDot.position.set(0, -0.36, 0.15);
+  droneGroup.add(thermalDot);
+
+  const antenna = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.015, 0.4, 4),
+    engineMat
+  );
+  antenna.position.set(0, 0.35, -0.2);
+  droneGroup.add(antenna);
+  
+  const antennaTip = new THREE.Mesh(
+    new THREE.SphereGeometry(0.035, 6, 6),
+    accentMat
+  );
+  antennaTip.position.set(0, 0.55, -0.2);
+  droneGroup.add(antennaTip);
+
+  const skidMat = new THREE.MeshStandardMaterial({ 
+    color: 0x333333, roughness: 0.4, metalness: 0.7 
+  });
+  [-0.35, 0.35].forEach(xOff => {
+    const skidVertL = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4),
+      skidMat
+    );
+    skidVertL.position.set(xOff, -0.3, 0.3);
+    droneGroup.add(skidVertL);
+    
+    const skidVertR = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4),
+      skidMat
+    );
+    skidVertR.position.set(xOff, -0.3, -0.3);
+    droneGroup.add(skidVertR);
+    
+    const skidHoriz = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.025, 0.025, 0.8, 4),
+      skidMat
+    );
+    skidHoriz.rotation.x = Math.PI / 2;
+    skidHoriz.position.set(xOff, -0.45, 0);
+    droneGroup.add(skidHoriz);
+  });
+
+  const motorPositions = [
+    { x: 0.8, z: 0.8, angle: Math.PI / 4 }, 
+    { x: -0.8, z: 0.8, angle: 3 * Math.PI / 4 },
+    { x: 0.8, z: -0.8, angle: -Math.PI / 4 }, 
+    { x: -0.8, z: -0.8, angle: -3 * Math.PI / 4 }
+  ];
+
+  motorPositions.forEach((pos, index) => {
+    const armLength = 1.0;
+    const arm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, armLength, 6),
+      orangeMat
+    );
+    arm.position.set(pos.x / 2, 0, pos.z / 2);
+    arm.rotation.z = Math.PI / 2;
+    arm.rotation.y = pos.angle;
+    droneGroup.add(arm);
+
+    const motorMount = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.18, 0.08, 10),
+      bodyMat
+    );
+    motorMount.position.set(pos.x, 0.05, pos.z);
+    droneGroup.add(motorMount);
+
+    const motor = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.12, 0.18, 12),
+      engineMat
+    );
+    motor.position.set(pos.x, 0.15, pos.z);
+    droneGroup.add(motor);
+    
+    const motorRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.13, 0.015, 4, 12),
+      accentMat
+    );
+    motorRing.rotation.x = Math.PI / 2;
+    motorRing.position.set(pos.x, 0.24, pos.z);
+    droneGroup.add(motorRing);
+
+    const propGroup = new THREE.Group();
+    propGroup.position.set(pos.x, 0.26, pos.z);
+    
+    const propDisc = new THREE.Mesh(
+      new THREE.CircleGeometry(0.4, isLowEnd ? 16 : 24),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff, transparent: true, opacity: 0.12,
+        side: THREE.DoubleSide
+      })
+    );
+    propDisc.rotation.x = -Math.PI / 2;
+    propGroup.add(propDisc);
+    
+    for(let i = 0; i < 2; i++){
+      const blade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.38, 0.015, 0.06),
+        engineMat
+      );
+      blade.geometry.translate(0.19, 0, 0);
+      blade.rotation.y = (Math.PI) * i;
+      propGroup.add(blade);
+    }
+    
+    const propHub = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.04, 6),
+      accentMat
+    );
+    propHub.position.y = 0.01;
+    propGroup.add(propHub);
+    
+    droneGroup.add(propGroup);
+    propellers.push(propGroup);
+
+    const isFront = pos.z > 0;
+    const ledMat = isFront ? greenMat : redMat;
+    const led = new THREE.Mesh(
+      new THREE.SphereGeometry(0.04, 6, 6),
+      ledMat
+    );
+    led.position.set(pos.x * 0.7, -0.05, pos.z * 0.7);
+    droneGroup.add(led);
+    
+    if(!isLowEnd){
+      const ledLight = new THREE.PointLight(isFront ? 0x00ff00 : 0xff0000, 0.3, 2);
+      ledLight.position.copy(led.position);
+      droneGroup.add(ledLight);
+    }
+  });
+
+  if(!isLowEnd){
+    spotlight = new THREE.SpotLight(0xffffee, 1.5, 20, Math.PI / 6, 0.5, 1);
+    spotlight.position.set(0, -0.3, 0.5);
+    spotlight.target.position.set(0, -5, 3);
+    droneGroup.add(spotlight);
+    droneGroup.add(spotlight.target);
+    
+    const spotCone = new THREE.Mesh(
+      new THREE.ConeGeometry(1.5, 5, 12, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffcc, transparent: true, opacity: 0.08,
+        side: THREE.DoubleSide, depthWrite: false
+      })
+    );
+    spotCone.position.set(0, -2.8, 3);
+    spotCone.rotation.x = Math.PI / 2;
+    droneGroup.add(spotCone);
+  }
+
+  const droneLightF = new THREE.PointLight(0xffcc00, isLowEnd ? 0.7 : 1.0, 6);
+  droneLightF.position.set(0, 0, 0.5);
+  droneGroup.add(droneLightF);
+  
+  if(!isLowEnd){
+    const droneLightB = new THREE.PointLight(0xff3333, 0.6, 4);
+    droneLightB.position.set(0, 0, -0.5);
+    droneGroup.add(droneLightB);
+  }
+
+  const winchGroup = new THREE.Group();
+  winchGroup.position.set(0, -0.4, 0);
+  
+  const winchBody = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.12, 0.15, 10),
+    engineMat
+  );
+  winchGroup.add(winchBody);
+  
+  const winchRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.13, 0.02, 4, 12),
+    orangeMat
+  );
+  winchRing.rotation.x = Math.PI / 2;
+  winchRing.position.y = -0.08;
+  winchGroup.add(winchRing);
+  
+  droneGroup.add(winchGroup);
+
+  const cableMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
+  rescueCable = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.01, 0.01, 1, 3),
+    cableMat
+  );
+  rescueCable.position.set(0, -1, 0);
+  rescueCable.visible = false;
+  droneGroup.add(rescueCable);
+
+  const rescueBoxGroup = new THREE.Group();
+  
+  const boxBody = new THREE.Mesh(
+    new THREE.BoxGeometry(0.3, 0.25, 0.3),
+    orangeMat
+  );
+  rescueBoxGroup.add(boxBody);
+  
+  const boxCrossH = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.05, 0.1),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  boxCrossH.position.z = 0.16;
+  rescueBoxGroup.add(boxCrossH);
+  
+  const boxCrossV = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 0.05, 0.32),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  boxCrossV.position.z = 0.16;
+  rescueBoxGroup.add(boxCrossV);
+  
+  rescueBoxGroup.position.set(0, -0.6, 0);
+  rescueBoxGroup.visible = false;
+  droneGroup.add(rescueBoxGroup);
+  rescueBox = rescueBoxGroup;
+
+  const detectorGroup = new THREE.Group();
+  detectorGroup.position.set(0, -0.55, 0);
+  
+  const detectorRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.3, 0.03, 6, 20),
+    orangeMat
+  );
+  detectorRing.rotation.x = Math.PI / 2;
+  detectorGroup.add(detectorRing);
+  
+  detectorDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(0.3, 20),
+    new THREE.MeshBasicMaterial({
+      color: 0xff6600, transparent: true, opacity: 0.2,
+      side: THREE.DoubleSide
+    })
+  );
+  detectorDisc.rotation.x = Math.PI / 2;
+  detectorGroup.add(detectorDisc);
+  
+  for(let i = 0; i < 4; i++){
+    const ang = (i / 4) * Math.PI * 2;
+    const mount = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015, 0.015, 0.25, 4),
+      engineMat
+    );
+    mount.position.set(Math.cos(ang) * 0.25, 0.15, Math.sin(ang) * 0.25);
+    detectorGroup.add(mount);
+  }
+  
+  droneGroup.add(detectorGroup);
+
+  console.log("🚁 Дрон-спасатель собран!" + (isLowEnd ? " (упрощённая модель для слабого устройства)" : ""));
+}
+
+function setupTrail(){
+  const trailLength = isLowEnd ? 8 : CONFIG.TRAIL_LENGTH;
+  for(let i = 0; i < trailLength; i++){
+    const particle = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08 * (1 - i / trailLength), 4, 4),
+      new THREE.MeshBasicMaterial({
+        color: 0xecc94b,
+        transparent: true,
+        opacity: 0.3 * (1 - i / trailLength)
+      })
+    );
+    particle.visible = false;
+    particle.userData.life = 0;
+    particle.userData.baseOpacity = 0.3 * (1 - i / trailLength);
+    scene.add(particle);
+    trailParticles.push(particle);
+  }
+}
+
+class Victim{
+  constructor(scene, x, z){
+    this.group = new THREE.Group();
+    this.startX = x;
+    this.startZ = z;
+    this.active = false;
+    this.rescued = false;
+
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x4a5568, roughness: 0.8, metalness: 0.2
+    });
+    const skinMat = new THREE.MeshStandardMaterial({
+      color: 0xf5c9a3, roughness: 0.7, metalness: 0.1
+    });
+    const signalMat = new THREE.MeshStandardMaterial({
+      color: 0xff3333, emissive: 0xff0000, emissiveIntensity: 0.8,
+      roughness: 0.3, metalness: 0.5
+    });
+    const clothMat = new THREE.MeshStandardMaterial({
+      color: 0x2b6cb0, roughness: 0.8, metalness: 0.1
+    });
+
+    const segments = isLowEnd ? 6 : 10;
+
+    const torso = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.25, 0.6, segments),
+      clothMat
+    );
+    torso.position.y = 0.4;
+    if(!isLowEnd) torso.castShadow = true;
+    this.group.add(torso);
+
+    const head = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, segments + 2, segments),
+      skinMat
+    );
+    head.position.y = 0.85;
+    this.group.add(head);
+
+    this.leftArm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 0.4, 4),
+      clothMat
+    );
+    this.leftArm.position.set(-0.28, 0.55, 0);
+    this.leftArm.geometry.translate(0, 0.2, 0);
+    this.group.add(this.leftArm);
+    
+    this.rightArm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 0.4, 4),
+      clothMat
+    );
+    this.rightArm.position.set(0.28, 0.55, 0);
+    this.rightArm.geometry.translate(0, 0.2, 0);
+    this.group.add(this.rightArm);
+
+    this.signalLight = new THREE.PointLight(0xff3333, isLowEnd ? 1.0 : 1.5, isLowEnd ? 5 : 8);
+    this.signalLight.position.set(0, 1.2, 0);
+    this.group.add(this.signalLight);
+    
+    const signalFlare = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 6, 6),
+      signalMat
+    );
+    signalFlare.position.set(0, 1.2, 0);
+    this.group.add(signalFlare);
+    this.signalFlare = signalFlare;
+
+    const groundCircle = new THREE.Mesh(
+      new THREE.RingGeometry(0.8, 1.0, 16),
+      new THREE.MeshBasicMaterial({
+        color: 0xff3333, transparent: true, opacity: 0.3,
+        side: THREE.DoubleSide
+      })
+    );
+    groundCircle.rotation.x = -Math.PI / 2;
+    groundCircle.position.y = 0.02;
+    this.group.add(groundCircle);
+    this.groundCircle = groundCircle;
+
+    this.group.position.set(x, CONFIG.GROUND_Y, z);
+    scene.add(this.group);
+    this.reset();
+  }
+
+  update(dronePos){
+    if(!this.active || this.rescued) return 0;
+    
+    const time = performance.now() * 0.001;
+    
+    this.leftArm.rotation.z = Math.sin(time * 4) * 0.8 + 0.3;
+    this.rightArm.rotation.z = -Math.sin(time * 4 + Math.PI) * 0.8 - 0.3;
+    
+    this.signalLight.intensity = 1.0 + Math.sin(time * 3) * 0.5;
+    this.signalFlare.material.emissiveIntensity = 0.5 + Math.sin(time * 3) * 0.5;
+    this.signalFlare.scale.setScalar(1 + Math.sin(time * 3) * 0.2);
+    
+    this.groundCircle.material.opacity = 0.2 + Math.sin(time * 2) * 0.1;
+    
+    const dx = dronePos.x - this.group.position.x;
+    const dz = dronePos.z - this.group.position.z;
+    const dy = dronePos.y - this.group.position.y;
+    const distance = Math.sqrt(dx * dx + dz * dz + dy * dy);
+    
+    return Math.max(0, 1 - distance / CONFIG.DETECTOR_RANGE);
+  }
+
+  rescue(){
+    if(!this.active || this.rescued) return false;
+    this.rescued = true;
+    this.active = false;
+    this.group.visible = false;
+    return true;
+  }
+
+  reset(){
+    this.active = true;
+    this.rescued = false;
+    this.group.visible = true;
+    this.group.position.set(this.startX, CONFIG.GROUND_Y, this.startZ);
+  }
+
+  isInRescueZone(dronePos, droneAltitude){
+    if(!this.active || this.rescued) return false;
+    
+    const dx = dronePos.x - this.group.position.x;
+    const dz = dronePos.z - this.group.position.z;
+    const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+    
+    return horizontalDist < CONFIG.CAPTURE_RADIUS && droneAltitude < 8;
+  }
+}
+
+function setupVictims(){
+  victims = [];
+  const usedPositions = [];
+  const diff = DIFFICULTIES[currentDifficulty];
+  
+  for(let i = 0; i < diff.targets; i++){
+    let x, z, valid;
+    let attempts = 0;
+    do {
+      x = (Math.random() - 0.5) * 30;
+      z = (Math.random() - 0.5) * 30;
+      valid = usedPositions.every(p => 
+        Math.hypot(p.x - x, p.z - z) > 5
+      );
+      attempts++;
+      if(attempts > 100) break;
+    } while(!valid);
+    usedPositions.push({ x, z });
+    victims.push(new Victim(scene, x, z));
+  }
+}
+
+function regenerateVictims(){
+  victims.forEach(v => {
+    if(v && v.group && v.group.parent){
+      scene.remove(v.group);
+    }
+  });
+  setupVictims();
+}
+
+function setupSmoke(){
+  smokeParticles.forEach(s => scene.remove(s));
+  smokeParticles = [];
+  
+  const diff = DIFFICULTIES[currentDifficulty];
+  const smokeCount = isLowEnd ? Math.floor(diff.smokeCount / 2) : diff.smokeCount;
+  const smokeMat = new THREE.MeshBasicMaterial({
+    color: 0x888888, transparent: true, opacity: 0.3,
+    depthWrite: false
+  });
+  
+  for(let i = 0; i < smokeCount; i++){
+    const smoke = new THREE.Mesh(
+      new THREE.SphereGeometry(1.5 + Math.random() * 1.5, 6, 6),
+      smokeMat.clone()
+    );
+    smoke.position.set(
+      (Math.random() - 0.5) * 35,
+      0.5 + Math.random() * 2,
+      (Math.random() - 0.5) * 35
+    );
+    smoke.scale.set(1 + Math.random(), 0.6 + Math.random() * 0.4, 1 + Math.random());
+    smoke.userData.baseY = smoke.position.y;
+    smoke.userData.phase = Math.random() * Math.PI * 2;
+    scene.add(smoke);
+    smokeParticles.push(smoke);
+  }
+}
+
+function updateSmoke(){
+  const time = performance.now() * 0.001;
+  smokeParticles.forEach(s => {
+    s.position.y = s.userData.baseY + Math.sin(time + s.userData.phase) * 0.3;
+    s.rotation.y += 0.002;
+  });
+}
+
+function updateDetector(){
+  let maxSignal = 0;
+  
+  victims.forEach(victim => {
+    if(victim.active && !victim.rescued){
+      const signal = victim.update(droneGroup.position);
+      if(signal > maxSignal) maxSignal = signal;
+    }
+  });
+  
+  state.detectorSignal = maxSignal;
+  document.getElementById('detector-fill').style.width = (maxSignal * 100) + '%';
+  
+  const now = performance.now();
+  const interval = 1200 - maxSignal * 1000;
+  if(maxSignal > 0.05 && now - lastDetectorBeep > interval){
+    SFX.detector(maxSignal);
+    lastDetectorBeep = now;
+  }
+  
+  if(detectorDisc){
+    detectorDisc.material.opacity = 0.1 + maxSignal * 0.4;
+    detectorDisc.material.color.setHex(maxSignal > 0.7 ? 0xff3333 : 0xff6600);
+  }
+}
+
+function updateCompass(){
+  let nearest = null, minDist = Infinity;
+  victims.forEach(v => {
+    if(!v.active || v.rescued) return;
+    const d = Math.hypot(
+      droneGroup.position.x - v.group.position.x,
+      droneGroup.position.z - v.group.position.z
+    );
+    if(d < minDist){ minDist = d; nearest = v; }
+  });
+  
+  const arrow = document.getElementById('compass-arrow');
+  if(!arrow) return;
+  
+  if(!nearest){
+    arrow.style.opacity = '0';
+    return;
+  }
+  
+  arrow.style.opacity = '0.7';
+  const angle = Math.atan2(
+    nearest.group.position.x - droneGroup.position.x,
+    nearest.group.position.z - droneGroup.position.z
+  );
+  arrow.style.transform = `translate(-50%, -100%) rotate(${angle}rad)`;
+}
+
+function applyCollision(){
+  const pos = droneGroup.position;
+  let collided = false;
+  let impactForce = 0;
+
+  if(pos.x > CONFIG.LIMIT_X){
+    impactForce = Math.max(impactForce, Math.abs(state.velocity.x));
+    pos.x = CONFIG.LIMIT_X;
+    state.velocity.x = -Math.abs(state.velocity.x) * 0.5;
+    collided = true;
+  }
+  if(pos.x < CONFIG.MIN_X){
+    impactForce = Math.max(impactForce, Math.abs(state.velocity.x));
+    pos.x = CONFIG.MIN_X;
+    state.velocity.x = Math.abs(state.velocity.x) * 0.5;
+    collided = true;
+  }
+  if(pos.z > CONFIG.LIMIT_Z){
+    impactForce = Math.max(impactForce, Math.abs(state.velocity.z));
+    pos.z = CONFIG.LIMIT_Z;
+    state.velocity.z = -Math.abs(state.velocity.z) * 0.5;
+    collided = true;
+  }
+  if(pos.z < CONFIG.MIN_Z){
+    impactForce = Math.max(impactForce, Math.abs(state.velocity.z));
+    pos.z = CONFIG.MIN_Z;
+    state.velocity.z = Math.abs(state.velocity.z) * 0.5;
+    collided = true;
+  }
+
+  if(state.altitude <= 1){
+    state.altitude = 1;
+    if(state.velocity.y < -0.1){
+      impactForce = Math.abs(state.velocity.y) * 10;
+      state.velocity.y = 0;
+      collided = true;
+    }
+  }
+
+  if(collided && impactForce > CONFIG.COLLISION_FORCE_THRESHOLD){
+    triggerCollisionEffect(impactForce);
+  }
+}
+
+function triggerCollisionEffect(force){
+  const flash = document.getElementById('collision-flash');
+  flash.classList.add('active');
+  setTimeout(() => flash.classList.remove('active'), 150);
+  cameraShake = Math.min(force * 5, 1);
+  
+  if(force >= CONFIG.CRASH_FORCE_THRESHOLD && !state.isCrashed){
+    state.isCrashed = true;
+    showDefeatModal("💥 КРУШЕНИЕ! Дрон разбился!");
+  } else if(!state.isCrashed){
+    SFX.collision();
+    showNotification("⚠️ СТОЛКНОВЕНИЕ!", 'hit');
+  }
+}
+
+// ✅ ИСПРАВЛЕНО: Обработка клавиш теперь работает ВСЕГДА, включая паузу при isCrashed
+function handleKeyDown(e){
+  // Пауза работает ВСЕГДА, кроме завершённой игры
+  if(e.key === 'Escape'){
+    if(!state.gameCompleted){
+      togglePause();
+      e.preventDefault();
+    }
+    return;
+  }
+  
+  // Остальные клавиши — только если не в паузе и не разбит
+  if(state.isPaused || state.isCrashed || state.gameCompleted) return;
+  
+  state.keys[e.key] = true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  ensureAudio();
+}
+
+function handleKeyUp(e){ state.keys[e.key] = false; }
+
+function handleMouseDown(e){
+  if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+  state.mouseDown = true;
+  ensureAudio();
+  startAudio();
+}
+function handleMouseUp(){ state.mouseDown = false; }
+
+// ✅ ИСПРАВЛЕНО: Разделены обработка ввода и движение дрона
+function handleInput(){
+  if(state.gameCompleted || state.isPaused || state.isCrashed) return;
+  
+  // Управление высотой
+  if(state.keys.q || state.keys.Q || state.keys.Shift){
+    state.targetAltitude = Math.min(CONFIG.MAX_ALTITUDE, state.altitude + CONFIG.CLIMB_SPEED);
+  }
+  if(state.keys.e || state.keys.E || state.keys.Control){
+    state.targetAltitude = Math.max(CONFIG.MIN_ALTITUDE, state.altitude - CONFIG.DIVE_SPEED);
+  }
+}
+
+function handleMovement(){
+  if(state.isCrashed || state.gameCompleted || state.isPaused) return;
+
+  let forward = 0, right = 0;
+  
+  if(state.keys.ArrowUp || state.keys.w || state.keys.W || state.keys['ц'] || state.keys['Ц']) forward = -1;
+  if(state.keys.ArrowDown || state.keys.s || state.keys.S || state.keys['ы'] || state.keys['Ы']) forward = 1;
+  if(state.keys.ArrowLeft || state.keys.a || state.keys.A || state.keys['ф'] || state.keys['Ф']) right = -1;
+  if(state.keys.ArrowRight || state.keys.d || state.keys.D || state.keys['в'] || state.keys['В']) right = 1;
+  
+  if(Math.abs(state.joystickInput.x) > 0.1 || Math.abs(state.joystickInput.y) > 0.1){
+    right = state.joystickInput.x;
+    forward = state.joystickInput.y;
+  }
+
+  const targetPitch = forward * CONFIG.MAX_TILT;
+  const targetRoll = right * CONFIG.MAX_TILT;
+
+  state.pitch += (targetPitch - state.pitch) * 0.15;
+  state.roll += (targetRoll - state.roll) * 0.15;
+
+  droneGroup.rotation.x = state.pitch;
+  droneGroup.rotation.z = state.roll;
+
+  state.velocity.x += right * CONFIG.DRONE_SPEED * 0.08;
+  state.velocity.z += forward * CONFIG.DRONE_SPEED * 0.08;
+  state.velocity.x *= CONFIG.DRONE_DRAG;
+  state.velocity.z *= CONFIG.DRONE_DRAG;
+
+  droneGroup.position.x += state.velocity.x;
+  droneGroup.position.z += state.velocity.z;
+
+  state.altitude += (state.targetAltitude - state.altitude) * 0.05;
+  droneGroup.position.y = state.altitude;
+
+  applyCollision();
+  updateDetector();
+  updateCompass();
+}
+
+function updateCrashAnimation(){
+  state.velocity.y -= 0.02;
+  state.altitude += state.velocity.y;
+  
+  state.crashRotation.x += 0.05;
+  state.crashRotation.z += 0.03;
+  droneGroup.rotation.x = state.crashRotation.x;
+  droneGroup.rotation.z = state.crashRotation.z;
+  
+  if(state.altitude <= 0){
+    state.altitude = 0;
+    state.velocity.y = 0;
+  }
+  droneGroup.position.y = state.altitude;
+}
+
+function updateRescue(){
+  if(state.isCrashed || state.gameCompleted || state.isPaused) return;
+
+  if(!state.mouseDown){
+    if(state.currentTarget){
+      state.currentTarget = null;
+      state.captureStartTime = 0;
+      document.getElementById('crosshair-progress').classList.remove('active');
+      document.getElementById('crosshair').classList.remove('locked');
+      if(rescueCable) rescueCable.visible = false;
+      if(rescueBox) rescueBox.visible = false;
+    }
+    return;
+  }
+
+  let targetInRange = null;
+  let minDist = Infinity;
+  for(let v of victims){
+    if(v.isInRescueZone(droneGroup.position, state.altitude)){
+      const dist = Math.hypot(
+        droneGroup.position.x - v.group.position.x,
+        droneGroup.position.z - v.group.position.z
+      );
+      if(dist < minDist){
+        minDist = dist;
+        targetInRange = v;
+      }
+    }
+  }
+
+  if(targetInRange){
+    if(state.currentTarget !== targetInRange){
+      state.currentTarget = targetInRange;
+      state.captureStartTime = performance.now();
+      document.getElementById('crosshair-progress').classList.add('active');
+      document.getElementById('crosshair').classList.add('locked');
+      SFX.beep();
+      if(rescueBox) rescueBox.visible = true;
+    } else {
+      const elapsed = performance.now() - state.captureStartTime;
+      const progress = Math.min(elapsed / CONFIG.CAPTURE_TIME, 1);
+      
+      if(rescueCable){
+        rescueCable.visible = true;
+        const cableLength = progress * 3;
+        rescueCable.scale.y = cableLength;
+        rescueCable.position.y = -0.5 - cableLength / 2;
+      }
+      if(rescueBox){
+        rescueBox.visible = true;
+        rescueBox.position.y = -0.6 - progress * 3;
+      }
+      
+      if(elapsed >= CONFIG.CAPTURE_TIME){
+        if(targetInRange.rescue()){
+          state.rescuedCount++;
+          document.getElementById('hits').innerText = state.rescuedCount;
+          document.getElementById('target-counter').innerText = state.rescuedCount;
+          
+          createRescueEffect(
+            targetInRange.group.position.x,
+            targetInRange.group.position.y + 0.5,
+            targetInRange.group.position.z
+          );
+          
+          const flash = document.getElementById('rescue-flash');
+          flash.classList.add('active');
+          setTimeout(() => flash.classList.remove('active'), 300);
+          
+          SFX.lock();
+          setTimeout(() => SFX.drop(), 100);
+          setTimeout(() => SFX.rescue(), 200);
+          showNotification(`🆘 ПОСТРАДАВШИЙ СПАСЁН! ${state.rescuedCount}/${CONFIG.TARGET_COUNT}`, 'success');
+
+          state.currentTarget = null;
+          state.captureStartTime = 0;
+          document.getElementById('crosshair-progress').classList.remove('active');
+          document.getElementById('crosshair').classList.remove('locked');
+          if(rescueCable) rescueCable.visible = false;
+          if(rescueBox) rescueBox.visible = false;
+
+          if(state.rescuedCount >= CONFIG.TARGET_COUNT){
+            setTimeout(() => showVictoryModal(), 500);
+          }
+        }
+      }
+    }
+  } else {
+    if(state.currentTarget){
+      state.currentTarget = null;
+      state.captureStartTime = 0;
+      document.getElementById('crosshair-progress').classList.remove('active');
+      document.getElementById('crosshair').classList.remove('locked');
+      if(rescueCable) rescueCable.visible = false;
+      if(rescueBox) rescueBox.visible = false;
+    }
+  }
+}
+
+function createRescueEffect(x, y, z){
+  const ring = rescueEffectPool.getRing();
+  ring.position.set(x, y, z);
+  ring.rotation.x = -Math.PI / 2;
+  scene.add(ring);
+
+  let frame = 0;
+  let animationId;
+  const animateRing = () => {
+    if(state.gameCompleted || state.isCrashed){
+      rescueEffectPool.returnRing(ring);
+      return;
+    }
+    frame++;
+    const scale = 1 + frame * 0.3;
+    ring.scale.set(scale, scale, scale);
+    ring.material.opacity = 1 - frame / 30;
+    if(frame < 30){
+      animationId = requestAnimationFrame(animateRing);
+    } else {
+      rescueEffectPool.returnRing(ring);
+    }
+  };
+  animateRing();
+
+  activeAnimations.push({
+    cancel: () => {
+      if(animationId) cancelAnimationFrame(animationId);
+      rescueEffectPool.returnRing(ring);
+    }
+  });
+}
+
+function updateCamera(){
+  _tmpVec.set(
+    droneGroup.position.x + CONFIG.CAMERA_OFFSET.x,
+    droneGroup.position.y + CONFIG.CAMERA_OFFSET.y,
+    droneGroup.position.z + CONFIG.CAMERA_OFFSET.z
+  );
+  
+  if(cameraShake > 0){
+    _tmpVec.x += (Math.random() - 0.5) * cameraShake * 0.5;
+    _tmpVec.y += (Math.random() - 0.5) * cameraShake * 0.5;
+    cameraShake *= 0.9;
+    if(cameraShake < 0.01) cameraShake = 0;
+  }
+  
+  camera.position.lerp(_tmpVec, CONFIG.CAMERA_LERP);
+  camera.lookAt(droneGroup.position);
+}
+
+function updatePropellers(){
+  state.propAngle += state.isCrashed ? 0.1 : 0.9;
+  propellers.forEach(p => { p.rotation.y = state.propAngle; });
+}
+
+function updateTrail(){
+  state.trailTimer++;
+  if(state.trailTimer > 2){
+    state.trailTimer = 0;
+    const p = trailParticles[state.trailIndex];
+    p.position.copy(droneGroup.position);
+    p.position.y -= 0.3;
+    p.visible = true;
+    p.scale.set(1, 1, 1);
+    p.userData.life = 30;
+    p.material.opacity = p.userData.baseOpacity;
+    state.trailIndex = (state.trailIndex + 1) % trailParticles.length;
+  }
+  for(let i = 0; i < trailParticles.length; i++){
+    const p = trailParticles[i];
+    if(p.visible && p.userData.life > 0){
+      p.userData.life--;
+      const t = p.userData.life / 30;
+      p.material.opacity = p.userData.baseOpacity * t;
+      p.scale.multiplyScalar(0.97);
+      if(p.userData.life <= 0){
+        p.visible = false;
+        p.scale.set(1, 1, 1);
+      }
+    }
+  }
+}
+
+function setupMobileControls(){
+  const joystickZone = document.getElementById('joystick-zone');
+  const stick = document.getElementById('joystick-stick');
+  let joystickActive = false;
+  let joystickCenter = { x: 0, y: 0 };
+  
+  function updateJoystick(clientX, clientY){
+    const dx = clientX - joystickCenter.x;
+    const dy = clientY - joystickCenter.y;
+    const maxDist = 50;
+    const dist = Math.min(Math.hypot(dx, dy), maxDist);
+    const angle = Math.atan2(dy, dx);
+    
+    const nx = Math.cos(angle) * dist;
+    const ny = Math.sin(angle) * dist;
+    
+    stick.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+    state.joystickInput.x = nx / maxDist;
+    state.joystickInput.y = ny / maxDist;
+  }
+  
+  function resetJoystick(){
+    stick.style.transform = 'translate(-50%, -50%)';
+    state.joystickInput.x = 0;
+    state.joystickInput.y = 0;
+    joystickActive = false;
+  }
+  
+  joystickZone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = joystickZone.getBoundingClientRect();
+    joystickCenter.x = rect.left + rect.width / 2;
+    joystickCenter.y = rect.top + rect.height / 2;
+    joystickActive = true;
+    updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+    ensureAudio();
+  }, { passive: false });
+  
+  joystickZone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if(joystickActive) updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+  
+  joystickZone.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    resetJoystick();
+  }, { passive: false });
+  
+  const btnUp = document.getElementById('btn-up');
+  const btnDown = document.getElementById('btn-down');
+  
+  btnUp.addEventListener('touchstart', (e) => { e.preventDefault(); state.keys.Shift = true; ensureAudio(); }, { passive: false });
+  btnUp.addEventListener('touchend', (e) => { e.preventDefault(); state.keys.Shift = false; }, { passive: false });
+  
+  btnDown.addEventListener('touchstart', (e) => { e.preventDefault(); state.keys.Control = true; ensureAudio(); }, { passive: false });
+  btnDown.addEventListener('touchend', (e) => { e.preventDefault(); state.keys.Control = false; }, { passive: false });
+  
+  const btnRescue = document.getElementById('btn-rescue');
+  btnRescue.addEventListener('touchstart', (e) => { 
+    e.preventDefault(); 
+    state.mouseDown = true; 
+    btnRescue.classList.add('active');
+    ensureAudio();
+  }, { passive: false });
+  btnRescue.addEventListener('touchend', (e) => { 
+    e.preventDefault(); 
+    state.mouseDown = false; 
+    btnRescue.classList.remove('active');
+  }, { passive: false });
+  
+  document.getElementById('btn-pause-mobile').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    togglePause();
+  }, { passive: false });
+}
+
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden){
+    if(!state.isPaused && !state.gameCompleted && !state.isCrashed){
+      togglePause();
+    }
+  } else if(state.simulatorInitialized && !state.animationId){
+    animate(performance.now());
+  }
+});
+
+// ✅ ИСПРАВЛЕНО: Главный цикл теперь всегда обрабатывает ввод
+function animate(time){
+  if(state.isPaused){
+    state.animationId = null;
+    return;
+  }
+  
+  state.animationId = requestAnimationFrame(animate);
+  
+  // Обработка ввода работает ВСЕГДА (включая паузу и isCrashed)
+  handleInput();
+  
+  if(state.isCrashed && !state.gameCompleted){
+    updateCrashAnimation();
+  } else if(!state.gameCompleted){
+    handleMovement();
+    updateTrail();
+    updateRescue();
+  }
+  
+  updateSmoke();
+  updatePropellers();
+  updateCamera();
+
+  if(gridHelper && gridHelper.material){
+    gridHelper.material.opacity = 0.3 + Math.sin((time || 0) * 0.001) * 0.1;
+  }
+
+  renderer.render(scene, camera);
+}
+
+function handleResize(){
+  if(!camera || !renderer) return;
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function setupEventListeners(){
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+  window.addEventListener('mousedown', handleMouseDown);
+  window.addEventListener('mouseup', handleMouseUp);
+  window.addEventListener('resize', handleResize);
+  
+  window.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  });
+  
+  document.getElementById('resetDroneBtn').addEventListener('click', resetExercise);
+  document.getElementById('fullRestartBtn').addEventListener('click', fullGameRestart);
+  document.getElementById('defeatRestartBtn').addEventListener('click', fullGameRestart);
+  document.getElementById('pauseRestartBtn').addEventListener('click', () => {
+    state.isPaused = false;
+    document.getElementById('pauseModal').classList.remove('show');
+    fullGameRestart();
+  });
+  document.getElementById('exitMenuBtn').addEventListener('click', exitToMenu);
+  document.getElementById('exitToMenuBtn').addEventListener('click', exitToMenu);
+  document.getElementById('defeatExitBtn').addEventListener('click', exitToMenu);
+  document.getElementById('pauseExitBtn').addEventListener('click', exitToMenu);
+  document.getElementById('pauseBtn').addEventListener('click', togglePause);
+  document.getElementById('resumeBtn').addEventListener('click', togglePause);
+  
+  setupMobileControls();
+}
+
+window.addEventListener('beforeunload', () => {
+  if(state.animationId) cancelAnimationFrame(state.animationId);
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  clearActiveAnimations();
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
+  window.removeEventListener('mousedown', handleMouseDown);
+  window.removeEventListener('mouseup', handleMouseUp);
+  window.removeEventListener('resize', handleResize);
+  if(audioCtx && audioCtx.state !== 'closed'){
+    try{ audioCtx.close(); } catch(e){}
+  }
+  rescueEffectPool.dispose();
+  if(scene){
+    scene.traverse(obj => {
+      if(obj.geometry) obj.geometry.dispose();
+      if(obj.material){
+        if(Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+    });
+  }
+  if(renderer) renderer.dispose();
+});
+</script>
+</body>
+</html>

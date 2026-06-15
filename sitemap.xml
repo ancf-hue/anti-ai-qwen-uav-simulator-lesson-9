@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd">
+
+  <!-- ==========================================================
+       Карта сайта для проекта "Оператор БПЛА: Урок 9 Спасатель"
+       Автор: Антон Анатольевич Кузнецов
+       Проект: Anti-AI Qwen Academy
+       ========================================================== -->
+
+  <!-- Главная страница (единственная страница приложения) -->
+  <url>
+    <loc>https://anti-ai-qwen-uav-simulator-lesson-9.vercel.app/</loc>
+    <lastmod>2026-06-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Дополнительные страницы (если появятся в будущем) -->
+  <!--
+  <url>
+    <loc>https://anti-ai-qwen-uav-simulator-lesson-9.vercel.app/about</loc>
+    <lastmod>2026-06-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  -->
+
+</urlset>

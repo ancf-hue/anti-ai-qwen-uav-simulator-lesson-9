@@ -1,0 +1,82 @@
+# ==========================================================
+# robots.txt для проекта "Оператор БПЛА: Урок 9 Спасатель"
+# Домен: anti-ai-qwen-uav-simulator-lesson-9.vercel.app
+# ==========================================================
+
+# Разрешаем всем поисковым роботам индексировать сайт
+User-agent: *
+Allow: /
+
+# Указываем путь к карте сайта
+Sitemap: https://anti-ai-qwen-uav-simulator-lesson-9.vercel.app/sitemap.xml
+
+# Указываем основной хост (на случай, если появятся другие домены)
+Host: anti-ai-qwen-uav-simulator-lesson-9.vercel.app
+
+# Запрещаем индексацию служебных файлов (опционально)
+Disallow: /favicon.ico
+Disallow: /rescue-theme.mp3
+Disallow: /uav-rescue.jpg
+
+# ==========================================================
+# Специальные правила для популярных поисковых систем
+# ==========================================================
+
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
+# Bing
+User-agent: Bingbot
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+
+# ==========================================================
+# Защита от недобросовестных AI-ботов (опционально)
+# Если вы хотите запретить обучение ИИ на вашем контенте
+# ==========================================================
+
+# Запрет для GPTBot (OpenAI)
+User-agent: GPTBot
+Disallow: /
+
+# Запрет для ChatGPT-User
+User-agent: ChatGPT-User
+Disallow: /
+
+# Запрет для CCBot (Common Crawl)
+User-agent: CCBot
+Disallow: /
+
+# Запрет для Google-Extended
+User-agent: Google-Extended
+Disallow: /
+
+# Запрет для Anthropic AI
+User-agent: anthropic-ai
+Disallow: /
+
+# Запрет для Claude-Web
+User-agent: Claude-Web
+Disallow: /
+
+# Запрет для Cohere AI
+User-agent: cohere-ai
+Disallow: /
+
+# Запрет для Meta AI
+User-agent: FacebookBot
+Disallow: /
+
+# Запрет для Applebot (обучение ИИ)
+User-agent: Applebot-Extended
+Disallow: /
